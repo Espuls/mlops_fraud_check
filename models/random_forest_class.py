@@ -52,7 +52,7 @@ def train_random_forest_model(x, y, dataset):
         log_mlflow_metrics(metrics)
 
         # Log the dataset as a tag and save model
-        mlflow.set_tag("dataset_used", dataset.name)
+        mlflow.set_tag("dataset_used", dataset)
         model_info = log_mlflow_model(model, x_train, y_pred, "RandomForestClassifierSearch")
 
         # Evaluate the model

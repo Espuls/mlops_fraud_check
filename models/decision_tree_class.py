@@ -51,7 +51,7 @@ def train_decision_tree_model(features, labels, dataset):
         metrics = calculate_metrics(y_test, y_pred)
         log_metrics(metrics)
 
-        mlflow.set_tag("dataset_used", dataset.name)
+        mlflow.set_tag("dataset_used", dataset)
         signature = infer_signature(x_train, y_pred)
 
         model_info = mlflow.sklearn.log_model(
