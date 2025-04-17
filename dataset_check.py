@@ -2,18 +2,18 @@ import pandas as pd
 import plotly.graph_objs as go
 from plotly.offline import plot
 
-# Constants
+# Constantes
 DATA_FILE_PATH = 'dataset/creditcard.csv'
 OUTPUT_PLOT_FILE = 'class.html'
 BAR_COLOR = "Red"
 
 
-# Load dataset
+# Carrega dataset
 def load_data(file_path):
     return pd.read_csv(file_path)
 
 
-# Inspect dataset
+# Inspeciona dataset
 def inspect_data(data_frame):
     print(f"Dataset Info - Rows: {data_frame.shape[0]}, Columns: {data_frame.shape[1]}")
     print(data_frame.head())
@@ -23,7 +23,7 @@ def inspect_data(data_frame):
     return pd.concat([missing_data, missing_percent], axis=1, keys=['Total', 'Percent'])
 
 
-# Plot class distribution
+# Plota a distribuição de classes
 def visualize_class_distribution(data_frame, output_file, bar_color):
     class_counts = data_frame["Class"].value_counts()
     class_data = pd.DataFrame({'Class': class_counts.index, 'values': class_counts.values})
@@ -45,7 +45,6 @@ def visualize_class_distribution(data_frame, output_file, bar_color):
     plot(fig, filename=output_file, auto_open=True)
 
 
-# Main function
 def main():
     # Load data
     data = load_data(DATA_FILE_PATH)
@@ -57,6 +56,5 @@ def main():
     visualize_class_distribution(data, OUTPUT_PLOT_FILE, BAR_COLOR)
 
 
-# Run main function
 if __name__ == "__main__":
     main()
