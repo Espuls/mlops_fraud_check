@@ -1,0 +1,2 @@
+# requirements.txt
+pip install -U imbalanced-learn mlflow flask shap numpy evidently pandas scikit-learn matplotlib dvc
