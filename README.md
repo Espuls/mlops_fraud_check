@@ -50,7 +50,12 @@ MLOps_credit_fraud/
    - Verifica os modelos registrados
    - Promove os modelos registrados que se destacaram em relação as métricas
 
-## MLflow UI
+5. **API endpoint**
+   * `python app_server.py`
+   - Configura o endpoint para a utilização do /invocations do mlflow
+   - Contém as APIs aque podem ser utilzadas
+
+## Mlflow UI
 
    - Para visualizar os experimentos no MLflow: `mlflow ui --backend-store-uri sqlite:///mlflow.db`
    - Acesse `http://localhost:5000` no navegador

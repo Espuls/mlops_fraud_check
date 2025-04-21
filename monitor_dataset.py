@@ -1,19 +1,22 @@
-import pandas as pd
-import numpy as np
-import requests
-import os
+import pandas as pd, numpy as np, requests, os, logging, time
 from evidently.core.report import Report
 from evidently.presets import DataDriftPreset, ClassificationPreset
 from sklearn.preprocessing import LabelEncoder
 
+
 # Constantes globais
-API_URL = 'http://127.0.0.1:5000/invocations'
-HEADERS = {'Content-Type': 'application/json'}
-COLUMNS = [
-    'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8',
-    'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18',
-    'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount'
-]
+API_URL   = "http://127.0.0.1:5000/invocations"     # keep without trailing slash
+HEADERS   = {"Content-Type": "application/json"}
+BATCHSIZE = 512
+
+COLUMNS = (["Time"] +
+    [f"V{i}" for i in range(1, 29)] +
+    ["Amount"]
+)                                                   # 31 features
+
+# Configure logging
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s | %(levelname)s | %(message)s")
 
 
 def detect_drift(drift_score, num_drift_columns):
@@ -59,15 +62,35 @@ def simulate_drift(df_examples):
     return new_df
 
 
-def get_predictions(data):
-    """Obtém previsões do modelo via API."""
-    instances = [{col: row[col] for col in COLUMNS} for _, row in data.iterrows()]
-    response = requests.post(API_URL, headers=HEADERS, json={'instances': instances})
-    print(response.status_code)
-    print(response.json())
-    predictions = response.json().get('predictions', [])
-    print(predictions)
-    return predictions
+# --------------------------------------------------------------------------- #
+#  Helper: POST in batches with retry / health‑check
+# --------------------------------------------------------------------------- #
+def _post_instances(instances, max_retries=3, backoff=2):
+    for attempt in range(1, max_retries + 1):
+        try:
+            r = requests.post(API_URL, headers=HEADERS, json={"instances": instances},
+                              timeout=30)
+            if r.status_code == 200:
+                return r.json()["predictions"]
+            raise RuntimeError(f"API {API_URL} -> {r.status_code} : {r.text[:200]}")
+        except Exception as e:
+            if attempt == max_retries:
+                raise
+            logging.warning("⚠  POST failed (%s) – retrying in %ss …", e, backoff)
+            time.sleep(backoff)
+    # unreachable
+
+
+def get_predictions(df: pd.DataFrame) -> list[int]:
+    """Returns predictions for df in order, batching to keep payloads small."""
+    preds = []
+    for start in range(0, len(df), BATCHSIZE):
+        batch = df.iloc[start:start + BATCHSIZE][COLUMNS]
+        instances = batch.to_dict(orient="records")
+        preds.extend(_post_instances(instances))
+    if len(preds) != len(df):
+        raise RuntimeError(f"Prediction length mismatch ({len(preds)} vs {len(df)})")
+    return preds
 
 
 def evaluate_model_drift(reference_data, y, current_data=None):
