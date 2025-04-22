@@ -2,7 +2,7 @@
 
 Este projeto implementa um sistema de detecção de fraudes em cartão de crédito usando técnicas de Machine Learning e MLOps.
 - Trabalho final disciplina de MLOps
-- Alunos: Erick Puls, Grace Feijó e Daniela Cavaleiro
+- Alunos: Erick Puls, Grace Feijó e Daniela Cavalheiro
 
 ## Configuração do Ambiente
 1. Instale as dependências:
